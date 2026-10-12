@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AE bracket measurement Check</title>
+<meta name="description" content="AE bracket measurement check calculator for WB300, WB71, and WB72 parts.">
+<meta name="theme-color" content="#2457d6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AE bracket measurement Check">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root { color-scheme: light dark; --bg: light-dark(#f4f6f8, #111827); --panel: light-dark(#ffffff, #1f2937); --text: light-dark(#172033, #f3f4f6); --muted: light-dark(#667085, #aab4c4); --border: light-dark(#dce2ea, #374151); --accent: light-dark(#2457d6, #8eb1ff); --field: light-dark(#ffffff, #111827); --good: light-dark(#087443, #6ee7a8); --bad: light-dark(#b42318, #ff9b91); }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+  #app { min-height: 100vh; width: 100%; background: var(--bg); padding: 36px 18px 48px; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  h1 { margin: 8px 0 8px; font-size: clamp(28px, 4vw, 38px); letter-spacing: -.04em; }
+  .intro { color: var(--muted); margin: 0 0 26px; line-height: 1.55; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 18px; box-shadow: 0 8px 28px rgba(0,0,0,.04); }
+  h2 { font-size: 17px; margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 7px; }
+  .ref { color: var(--muted); font-size: 12px; font-weight: 500; margin-left: 5px; }
+  input { width: 100%; min-width: 0; padding: 12px 13px; border: 1px solid var(--border); border-radius: 10px; color: var(--text); background: var(--field); font: inherit; outline: none; }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 7px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  button { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-size: 14px; font-weight: 750; cursor: pointer; }
+  .primary { color: #fff; background: #2457d6; }
+  .secondary { color: var(--text); background: transparent; border: 1px solid var(--border); }
+  .results { display: none; }
+  .results.visible { display: block; }
+  .summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .summary h2 { margin: 0; }
+  .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 800; }
+  .pill.good { color: var(--good); background: color-mix(in srgb, var(--good) 13%, transparent); }
+  .pill.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+  .result-list { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .result-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; align-items: center; gap: 12px; padding: 13px 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .result-row:last-child { border-bottom: 0; }
+  .result-row.head { background: color-mix(in srgb, var(--muted) 9%, transparent); color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .value { font-variant-numeric: tabular-nums; }
+  .error-box { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius: 14px; padding: 18px; margin-top: 18px; }
+  .error-label { color: var(--muted); font-size: 13px; font-weight: 700; }
+  .error-value { color: var(--accent); font-size: clamp(28px, 4vw, 36px); font-weight: 850; letter-spacing: -.04em; margin-top: 5px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .formula { color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 8px; }
+  .notice { color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 16px; }
+  @media (max-width: 650px) { #app { padding: 24px 12px 36px; } .panel { padding: 18px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; } .result-row { grid-template-columns: .65fr 1fr 1fr; gap: 8px; padding: 12px 10px; } .result-row > :last-child { grid-column: 1 / -1; } .result-row.head > :last-child { display: none; } }
+  @media (max-width: 390px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="wrap">
+    <div class="eyebrow">Quality / Measurement</div>
+    <h1>AE bracket measurement Check</h1>
+    <p class="intro">Select the part, enter measurements A–E and the current error. Check each measurement against that part’s reference and calculate the adjusted error.</p>
+    <section class="panel" aria-labelledby="inputs-title">
+      <h2 id="inputs-title">Measurement inputs</h2>
+      <div style="max-width: 320px; margin-bottom: 18px;"><label for="part">Part number</label><select id="part" style="width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--field); font:inherit;"><option value="WB300">WB300</option><option value="WB71">WB71</option><option value="WB72">WB72</option></select></div>
+      <div class="grid">
+        <div><label for="a">Input A <span class="ref" id="ref-a">Ref. 2.250</span></label><input id="a" type="number" step="any" placeholder="Enter A" /></div>
+        <div><label for="b">Input B <span class="ref" id="ref-b">Ref. 4.205</span></label><input id="b" type="number" step="any" placeholder="Enter B" /></div>
+        <div><label for="c">Input C <span class="ref" id="ref-c">Ref. 4.000</span></label><input id="c" type="number" step="any" placeholder="Enter C" /></div>
+        <div><label for="d">Input D <span class="ref" id="ref-d">Ref. 2.205</span></label><input id="d" type="number" step="any" placeholder="Enter D" /></div>
+        <div><label for="e">Input E <span class="ref" id="ref-e">Ref. 1.500</span></label><input id="e" type="number" step="any" placeholder="Enter E" /></div>
+        <div><label for="error">Input Error</label><input id="error" type="number" step="any" placeholder="Enter current error" /><div class="hint">Used as the starting value for the new error calculation.</div></div>
+      </div>
+      <div class="actions"><button class="primary" id="calculate" type="button">Calculate results</button><button class="secondary" id="reset" type="button">Reset</button></div>
+      <p class="notice">Tolerance is ±0.050 inclusive for A–E. Values exactly on either limit are considered OK.</p>
+    </section>
+    <section class="panel results" id="results" aria-live="polite" aria-labelledby="results-title">
+      <div class="summary"><h2 id="results-title">Results</h2><span id="overall" class="pill">—</span></div>
+      <div class="result-list" role="table" aria-label="Measurement check results">
+        <div class="result-row head" role="row"><span>Input</span><span>Entered</span><span>Difference</span><span>Status</span></div>
+        <div id="result-rows"></div>
+      </div>
+      <div class="error-box"><div class="error-label" id="error-label">Calculated New Error</div><div class="error-value" id="new-error">—</div><div class="formula" id="calculation-detail"></div></div>
+    </section>
+  </div>
+</main>
+<script>
+  const measurements = [
+    { key: 'a', label: 'A' },
+    { key: 'b', label: 'B' },
+    { key: 'c', label: 'C' },
+    { key: 'd', label: 'D' },
+    { key: 'e', label: 'E' }
+  ];
+  const partReferences = {
+    WB300: { a: 2.25, b: 4.205, c: 4.0, d: 2.205, e: 1.5 },
+    WB71: { a: 1.875, b: 1.955, c: 4.580, d: 2.955, e: 1.875 },
+    WB72: { a: 2.00, b: 2.33, c: 1.58, d: 1.58, e: 2.0 }
+  };
+  const partSelect = document.getElementById('part');
+  let activePart = 'WB300';
+  const updateReferences = () => {
+    activePart = partSelect.value;
+    measurements.forEach(item => {
+      document.getElementById('ref-' + item.key).textContent = 'Ref. ' + partReferences[activePart][item.key].toFixed(3);
+    });
+  };
+  partSelect.addEventListener('change', updateReferences);
+  updateReferences();
+  const tolerance = 0.05;
+  const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 6 });
+  const fmt = value => numberFormat.format(value);
+  const getValue = id => {
+    const field = document.getElementById(id);
+    if (field.value.trim() === '') return null;
+    const value = Number(field.value);
+    return Number.isFinite(value) ? value : null;
+  };
+  document.getElementById('calculate').addEventListener('click', () => {
+    const values = Object.fromEntries([...measurements.map(item => [item.key, getValue(item.key)]), ['error', getValue('error')]]);
+    const missing = [...measurements.map(item => item.key), 'error'].filter(key => values[key] === null);
+    if (missing.length) {
+      alert('Please enter a valid number in every field: ' + missing.map(key => key === 'error' ? 'Input Error' : 'Input ' + key.toUpperCase()).join(', ') + '.');
+      document.getElementById(missing[0]).focus();
+      return;
+    }
+    let allOk = true;
+    const rows = measurements.map(item => {
+      const value = values[item.key];
+      const reference = partReferences[activePart][item.key];
+      const difference = value - reference;
+      const ok = Math.abs(difference) <= tolerance + Number.EPSILON * 8;
+      if (!ok) allOk = false;
+      return `<div class="result-row" role="row"><span>Input ${item.label}</span><span class="value">${fmt(value)}</span><span class="value">${difference > 0 ? '+' : ''}${fmt(difference)}</span><span><span class="pill ${ok ? 'good' : 'bad'}">${ok ? 'OK' : 'NOT OK'}</span></span></div>`;
+    }).join('');
+    const cReference = partReferences[activePart].c;
+    const cDifference = values.c - cReference;
+    const adjustment = (cDifference / 4) * 25.4;
+    const rawNewError = values.error + adjustment;
+    const newError = Math.floor((rawNewError + Number.EPSILON * Math.max(1, Math.abs(rawNewError)) * 8) * 10) / 10;
+    document.getElementById('result-rows').innerHTML = rows;
+    const overall = document.getElementById('overall');
+    overall.textContent = allOk ? 'ALL MEASUREMENTS OK' : 'CHECK MEASUREMENTS';
+    overall.className = 'pill ' + (allOk ? 'good' : 'bad');
+    const errorWithinLimit = Math.abs(newError - values.error) <= 0.1 + Number.EPSILON * 8;
+    const showAllOk = allOk && errorWithinLimit;
+    document.getElementById('error-label').textContent = showAllOk ? 'Final Status' : 'Calculated New Error';
+    document.getElementById('new-error').textContent = showAllOk ? 'ALL OK' : fmt(newError);
+    document.getElementById('new-error').style.color = showAllOk ? 'var(--good)' : 'var(--accent)';
+    document.getElementById('calculation-detail').textContent = showAllOk
+      ? `All measurements A–E are OK, and the calculated error (${fmt(newError)}) is within ±0.1 of the input error (${fmt(values.error)}).`
+      : `Part: ${activePart}. Input Error + ((Input C − ${fmt(cReference)}) ÷ 4 × 25.4) = ${fmt(values.error)} + (${fmt(cDifference)} ÷ 4 × 25.4) = ${fmt(rawNewError)}. Rounded down to 0.1: ${newError.toFixed(1)}. Adjustment: ${adjustment > 0 ? '+' : ''}${fmt(adjustment)}. ${allOk ? 'Measurements A–E are OK, but the calculated error is not within ±0.1 of the input error.' : 'One or more measurements A–E are NOT OK.'}`;
+    document.getElementById('results').classList.add('visible');
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    [...measurements.map(item => item.key), 'error'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('error-label').textContent = 'Calculated New Error';
+    document.getElementById('new-error').style.color = 'var(--accent)';
+    document.getElementById('a').focus();
+  });
+  [...measurements.map(item => item.key), 'error'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', event => {
+      if (event.key === 'Enter') document.getElementById('calculate').click();
+    });
+  });
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
